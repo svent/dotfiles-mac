@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# Check if jq is installed
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq is not installed or not in PATH" >&2
+    echo "Please install jq to use this script" >&2
+    exit 1
+fi
+
+# Check if JSON file argument is provided
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <args for rg>" >&2
+    exit 1
+fi
+
+# Extract matches: filter for type="match" and get path and line_number
+matches=$(rg --smart-case --json "$@" | jq -r 'select(.type == "match") | "\(.data.path.text):\(.data.line_number)"')
+
+# Check if any matches were found
+if [ -z "$matches" ]; then
+    echo "No matches found" >&2
+    exit 1
+fi
+
+# Create a temporary script file
+script_file=$(mktemp /tmp/nvim_script.XXXXXX.vim)
+trap "rm -f $script_file" EXIT
+
+# Build the vim script
+first=true
+while IFS=: read -r file lineno; do
+    if [ "$first" = true ]; then
+        # First match: open file and go to line
+        echo "edit $file" >> "$script_file"
+        echo "$lineno" >> "$script_file"
+        first=false
+    else
+        # Subsequent matches: open in new tab and go to line
+        echo "tabnext" >> "$script_file"
+        echo "tabedit $file" >> "$script_file"
+        echo "$lineno" >> "$script_file"
+    fi
+done <<< "$matches"
+
+# Go back to first tab if multiple matches
+if [ "$(echo "$matches" | wc -l)" -gt 1 ]; then
+    echo "tabfirst" >> "$script_file"
+fi
+
+# Execute nvim with the script
+nvim -S "$script_file"

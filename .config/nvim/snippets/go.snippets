@@ -1,0 +1,14 @@
+snippet ier "return if err != nil" bA
+    if err != nil {
+        return err
+    }
+
+snippet ief "return fmt.Errorf if err != nil" bA
+    if err != nil {
+        return fmt.Errorf("$1: %s", err)
+    }
+    $0
+
+# append assignment
+snippet apa "a = append(a, value)"
+    ${1:slice} = append($1, ${0:value})

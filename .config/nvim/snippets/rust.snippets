@@ -1,0 +1,7 @@
+# Fmt Println
+snippet pl "println!(...)"
+    println!("${1:${VISUAL}}")
+
+snippet pd "eprintln!(...)"
+    eprintln!("${1:${VISUAL}} = {:?}", $1);
+
