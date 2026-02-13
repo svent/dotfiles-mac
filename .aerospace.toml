@@ -180,6 +180,7 @@ automatically-unhide-macos-hidden-apps = true
     # alt-shift-l = ['join-with right', 'mode main']
 
     f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
+    a = ['layout h_accordion tiles', 'mode main'] # Toggle between horizontal accordion and tiling layout
 
     h = 'resize width -50'
     l = 'resize width +50'
