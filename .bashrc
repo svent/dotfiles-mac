@@ -12,6 +12,8 @@ export PATH="$PATH:/opt/homebrew/bin"
 export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="$PATH:$HOME/go/bin"
 
+ulimit -n 40960
+
 alias ll='ls -lhF --color'
 alias la='ls -lahF --color'
 alias ltr='ls -ltrhF --color'
@@ -46,7 +48,7 @@ function f { if [[ -d $_ ]] ; then cd $_ ; else cd `dirname $_` ; fi }
 
 function httpdir { python3 -m http.server $1; }
 
-source .bashrc.local
+source ~/.bashrc.local
 
 eval "$(fzf --bash)"
 eval "$(zoxide init bash --cmd j)"
