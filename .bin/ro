@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# this needs the tokyonight theme for bat, see https://github.com/folke/tokyonight.nvim/issues/23#issuecomment-1581586548
+# then set <key>lineHighlight</key> in the theme file to <string>#305030</string>
+#
+# 1. Search for text in files using Ripgrep
+# 2. Interactively narrow down the list using fzf
+# 3. Open the file in Vim
+rg --color=always --line-number --no-heading --smart-case "${*:-}" 2>/dev/null |
+  fzf --ansi \
+      --delimiter : \
+      --preview 'bat --theme tokyonight_night --color=always {1} --highlight-line {2}' \
+      --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
+      --bind 'enter:become(nvim -p {1} +{2})'
+

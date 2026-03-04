@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+nvim -p $(fzf -m --preview-window 'up,60%' --preview "bat --theme tokyonight_night --color=always --style=numbers --line-range=:500 {}" -q "$*")
+
