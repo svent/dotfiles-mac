@@ -1033,6 +1033,7 @@ require('lazy').setup({
 })
 
 require 'keymaps'
+require 'custom_completion'
 
 vim.api.nvim_set_hl(0, 'Normal', { bg = '#1d1f21' })
 
