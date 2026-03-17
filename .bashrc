@@ -42,6 +42,9 @@ alias gl='git log --pretty=oneline --abbrev-commit --reverse -P | cat'
 alias gs='git status'
 alias lg='lazygit'
 
+alias zoc='zo -c'
+alias cmsg='git commit -a -e -m "$(git diff | zo /cmsg)"'
+
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 function f { if [[ -d $_ ]] ; then cd $_ ; else cd `dirname $_` ; fi }
