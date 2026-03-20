@@ -34,6 +34,7 @@ alias rg='rg --smart-case --max-columns=150 --max-columns-preview'
 alias ga='git add'
 alias gb='git branch'
 alias gco='git checkout'
+alias gcol='git branch | grep -v "\->" | sed "s/origin\///" | fzf --height=40% --reverse | xargs -I {} git checkout {}'
 alias gcor='git branch -r | grep -v "\->" | sed "s/origin\///" | fzf --height=40% --reverse | xargs -I {} git checkout {}'
 alias gci='git commit'
 alias gcia='git commit -a'
@@ -44,12 +45,17 @@ alias lg='lazygit'
 
 alias zoc='zo -c'
 alias cmsg='git commit -a -e -m "$(git diff | zo /cmsg)"'
+changelog() {
+    latest_tag=$(git for-each-ref --sort=-taggerdate --format='%(refname:short)' refs/tags | head -n1)
+    echo "changelog since $latest_tag:"
+    (git log "$latest_tag.."; git diff "$latest_tag..") | zo '/codex analyze this git log and git diff and update @!CHANGELOG.md to prepare releasing the next version'
+}
 
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
-function f { if [[ -d $_ ]] ; then cd $_ ; else cd `dirname $_` ; fi }
+f() { if [[ -d $_ ]] ; then cd $_ ; else cd `dirname $_` ; fi }
 
-function httpdir { python3 -m http.server $1; }
+httpdir() { python3 -m http.server $1; }
 
 source ~/.bashrc.local
 
