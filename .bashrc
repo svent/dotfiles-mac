@@ -18,8 +18,8 @@ alias ll='ls -lhF --color'
 alias la='ls -lahF --color'
 alias ltr='ls -ltrhF --color'
 alias ..='cd ..'
-alias fs='sift --targets --no-conf --exclude-dirs "*.git"'
-alias fsp='sift --targets --no-conf --exclude-dirs "*.git" --ipath'
+alias fs='rg --files'
+alias fsp='rg --files | rg -S'
 
 alias tzf='tar tzf'
 alias xzf='tar xzf'
@@ -44,7 +44,7 @@ alias gs='git status'
 alias lg='lazygit'
 
 alias zoc='zo -c'
-alias cmsg='git commit -a -e -m "$(git diff | zo /cmsg)"'
+alias cmsg='git commit -a -e -m "$(git diff HEAD | zo /cmsg)"'
 changelog() {
     latest_tag=$(git for-each-ref --sort=-taggerdate --format='%(refname:short)' refs/tags | head -n1)
     echo "changelog since $latest_tag:"
