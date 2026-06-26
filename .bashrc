@@ -1,4 +1,12 @@
-export PS1='\u@\h \w$ '
+git_branch_prompt() {
+    local b
+    b=$(git branch --show-current 2>/dev/null)
+    if [[ -n "$b" && "$b" != "main" ]]; then
+        printf '\e[32m(%s)\e[0m ' "$b"
+    fi
+}
+
+export PS1='\u@\h \w $(git_branch_prompt)\$ '
 
 export HISTSIZE=10000000
 export HISTFILESIZE=1000000000
@@ -6,6 +14,7 @@ export HISTCONTROL=ignoredups:ignorespace
 export HISTTIMEFORMAT="[%F %T] "
 
 export LS_COLORS="$LS_COLORS:ex=01;32"
+export EDITOR='nvim -p'
 
 export PATH="$HOME/.bin:$PATH"
 export PATH="$PATH:/opt/homebrew/bin"
@@ -18,8 +27,6 @@ alias ll='ls -lhF --color'
 alias la='ls -lahF --color'
 alias ltr='ls -ltrhF --color'
 alias ..='cd ..'
-alias fs='rg --files'
-alias fsp='rg --files | rg -S'
 
 alias tzf='tar tzf'
 alias xzf='tar xzf'
@@ -30,6 +37,7 @@ alias xJf='tar xJf'
 
 alias vi='nvim -p'
 alias rg='rg --smart-case --max-columns=150 --max-columns-preview'
+alias y='yazi'
 
 alias ga='git add'
 alias gb='git branch'
@@ -62,4 +70,3 @@ source ~/.bashrc.local
 eval "$(fzf --bash)"
 eval "$(zoxide init bash --cmd j)"
 eval "$(fnm env)"
-
