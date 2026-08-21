@@ -56,12 +56,15 @@ alias cmsg='git commit -a -e -m "$(git diff HEAD | zo /cmsg)"'
 changelog() {
     latest_tag=$(git for-each-ref --sort=-taggerdate --format='%(refname:short)' refs/tags | head -n1)
     echo "changelog since $latest_tag:"
-    (git log "$latest_tag.."; git diff "$latest_tag..") | zo '/codex analyze this git log and git diff and update @!CHANGELOG.md to prepare releasing the next version'
+    (git log "$latest_tag.."; git diff "$latest_tag..") | zo 'analyze this git log and git diff and update @!CHANGELOG.md to prepare releasing the next version'
 }
 
 alias dotfiles='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 f() { if [[ -d $_ ]] ; then cd $_ ; else cd `dirname $_` ; fi }
+sd() {
+    dir=$(fd . -t d "${1:-.}" 2>/dev/null | fzf) && cd "$dir" || return
+}
 
 httpdir() { python3 -m http.server $1; }
 
