@@ -32,6 +32,19 @@ vim.keymap.set('i', ';t', '<><ESC>i', { noremap = true, silent = true })
 vim.keymap.set('i', ';s', "''<ESC>i", { noremap = true, silent = true })
 vim.keymap.set('i', ';d', '""<ESC>i', { noremap = true, silent = true })
 
+local function surround_word(open, close)
+  return function()
+    return 'ciw' .. open .. '<C-r>"' .. close .. '<ESC>'
+  end
+end
+
+vim.keymap.set('n', ',a', surround_word('[', ']'), { expr = true, remap = true, silent = true, desc = 'Surround word with []' })
+vim.keymap.set('n', ',f', surround_word('(', ')'), { expr = true, remap = true, silent = true, desc = 'Surround word with ()' })
+vim.keymap.set('n', ',v', surround_word('{', '}'), { expr = true, remap = true, silent = true, desc = 'Surround word with {}' })
+vim.keymap.set('n', ',t', surround_word('<', '>'), { expr = true, remap = true, silent = true, desc = 'Surround word with <>' })
+vim.keymap.set('n', ',s', surround_word("'", "'"), { expr = true, remap = true, silent = true, desc = "Surround word with ''" })
+vim.keymap.set('n', ',d', surround_word('"', '"'), { expr = true, remap = true, silent = true, desc = 'Surround word with ""' })
+
 local function smart_enter()
   local _, col = unpack(vim.api.nvim_win_get_cursor(0))
   local line = vim.api.nvim_get_current_line()

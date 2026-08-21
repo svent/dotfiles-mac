@@ -6,6 +6,10 @@
 
 local group = vim.api.nvim_create_augroup('DynamicFallbackCompletion', { clear = true })
 
+-- Track only maps created by this module so we never delete mappings owned by
+-- other plugins (e.g. blink.cmp).
+local fallback_maps_active = {}
+
 local function should_use_fallback(bufnr)
   if not vim.api.nvim_buf_is_valid(bufnr) then
     return false
@@ -26,11 +30,11 @@ local function tab_fallback()
     return '<C-y>'
   end
 
-  local col = vim.fn.col('.') - 1
-  local line = vim.fn.getline('.')
+  local col = vim.fn.col '.' - 1
+  local line = vim.fn.getline '.'
 
   -- Preserve normal tab/indent behavior at BOL or after whitespace
-  if col <= 0 or line:sub(col, col):match('%s') then
+  if col <= 0 or line:sub(col, col):match '%s' then
     return '<Tab>'
   end
 
@@ -52,38 +56,56 @@ local function ctrl_k_fallback()
   return '<C-k>'
 end
 
+local function set_fallback_maps(bufnr)
+  vim.keymap.set('i', '<Tab>', tab_fallback, {
+    buffer = bufnr,
+    expr = true,
+    silent = true,
+    desc = 'Fallback completion: trigger/accept',
+  })
+
+  vim.keymap.set('i', '<C-Space>', '<C-x><C-p>', {
+    buffer = bufnr,
+    desc = 'Fallback completion: trigger',
+  })
+
+  vim.keymap.set('i', '<C-j>', ctrl_j_fallback, {
+    buffer = bufnr,
+    expr = true,
+    silent = true,
+    desc = 'Fallback completion: next item',
+  })
+
+  vim.keymap.set('i', '<C-k>', ctrl_k_fallback, {
+    buffer = bufnr,
+    expr = true,
+    silent = true,
+    desc = 'Fallback completion: previous item',
+  })
+
+  fallback_maps_active[bufnr] = true
+end
+
+local function clear_fallback_maps(bufnr)
+  if not fallback_maps_active[bufnr] then
+    return
+  end
+
+  pcall(vim.keymap.del, 'i', '<Tab>', { buffer = bufnr })
+  pcall(vim.keymap.del, 'i', '<C-Space>', { buffer = bufnr })
+  pcall(vim.keymap.del, 'i', '<C-j>', { buffer = bufnr })
+  pcall(vim.keymap.del, 'i', '<C-k>', { buffer = bufnr })
+
+  fallback_maps_active[bufnr] = nil
+end
+
 local function refresh_buffer_maps(bufnr)
   if should_use_fallback(bufnr) then
-    vim.keymap.set('i', '<Tab>', tab_fallback, {
-      buffer = bufnr,
-      expr = true,
-      silent = true,
-      desc = 'Fallback completion: trigger/accept',
-    })
-
-    vim.keymap.set('i', '<C-Space>', '<C-x><C-p>', {
-      buffer = bufnr,
-      desc = 'Fallback completion: trigger',
-    })
-
-    vim.keymap.set('i', '<C-j>', ctrl_j_fallback, {
-      buffer = bufnr,
-      expr = true,
-      silent = true,
-      desc = 'Fallback completion: next item',
-    })
-
-    vim.keymap.set('i', '<C-k>', ctrl_k_fallback, {
-      buffer = bufnr,
-      expr = true,
-      silent = true,
-      desc = 'Fallback completion: previous item',
-    })
+    if not fallback_maps_active[bufnr] then
+      set_fallback_maps(bufnr)
+    end
   else
-    pcall(vim.keymap.del, 'i', '<Tab>', { buffer = bufnr })
-    pcall(vim.keymap.del, 'i', '<C-Space>', { buffer = bufnr })
-    pcall(vim.keymap.del, 'i', '<C-j>', { buffer = bufnr })
-    pcall(vim.keymap.del, 'i', '<C-k>', { buffer = bufnr })
+    clear_fallback_maps(bufnr)
   end
 end
 
@@ -97,7 +119,13 @@ vim.api.nvim_create_autocmd({ 'BufEnter', 'FileType' }, {
 vim.api.nvim_create_autocmd('LspAttach', {
   group = group,
   callback = function(args)
-    refresh_buffer_maps(args.buf)
+    -- Delay to the next loop tick so completion plugins that react to LspAttach
+    -- can install their own mappings first.
+    vim.schedule(function()
+      if vim.api.nvim_buf_is_valid(args.buf) then
+        refresh_buffer_maps(args.buf)
+      end
+    end)
   end,
 })
 
@@ -105,5 +133,12 @@ vim.api.nvim_create_autocmd('LspDetach', {
   group = group,
   callback = function(args)
     refresh_buffer_maps(args.buf)
+  end,
+})
+
+vim.api.nvim_create_autocmd('BufWipeout', {
+  group = group,
+  callback = function(args)
+    fallback_maps_active[args.buf] = nil
   end,
 })
